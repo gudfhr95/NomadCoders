@@ -1,5 +1,5 @@
-import User from "../models/User";
 import Video from "../models/Video";
+import User from "../models/User";
 
 export const home = async (req, res) => {
   const videos = await Video.find({})
@@ -12,7 +12,7 @@ export const watch = async (req, res) => {
   const { id } = req.params;
   const video = await Video.findById(id).populate("owner");
   if (!video) {
-    return res.status(404).render("404", { pageTitle: "Video not found." });
+    return res.render("404", { pageTitle: "Video not found." });
   }
   return res.render("watch", { pageTitle: video.title, video });
 };
@@ -50,7 +50,6 @@ export const postEdit = async (req, res) => {
     description,
     hashtags: Video.formatHashtags(hashtags),
   });
-
   return res.redirect(`/videos/${id}`);
 };
 
@@ -58,7 +57,7 @@ export const getUpload = (req, res) => {
   return res.render("upload", { pageTitle: "Upload Video" });
 };
 
-export const postUpdload = async (req, res) => {
+export const postUpload = async (req, res) => {
   const {
     user: { _id },
   } = req.session;
@@ -77,6 +76,7 @@ export const postUpdload = async (req, res) => {
     user.save();
     return res.redirect("/");
   } catch (error) {
+    console.log(error);
     return res.status(400).render("upload", {
       pageTitle: "Upload Video",
       errorMessage: error._message,
@@ -85,10 +85,10 @@ export const postUpdload = async (req, res) => {
 };
 
 export const deleteVideo = async (req, res) => {
+  const { id } = req.params;
   const {
     user: { _id },
   } = req.session;
-  const { id } = req.params;
   const video = await Video.findById(id);
   if (!video) {
     return res.status(404).render("404", { pageTitle: "Video not found." });

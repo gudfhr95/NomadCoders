@@ -21,15 +21,20 @@ export const postJoin = async (req, res) => {
     });
   }
   try {
-    await User.create({ name, username, email, password, location });
+    await User.create({
+      name,
+      username,
+      email,
+      password,
+      location,
+    });
+    return res.redirect("/login");
   } catch (error) {
-    console.log(error);
     return res.status(400).render("join", {
-      pageTitle,
+      pageTitle: "Upload Video",
       errorMessage: error._message,
     });
   }
-  return res.redirect("/login");
 };
 
 export const getLogin = (req, res) =>
@@ -54,7 +59,7 @@ export const postLogin = async (req, res) => {
   }
   req.session.loggedIn = true;
   req.session.user = user;
-  res.redirect("/");
+  return res.redirect("/");
 };
 
 export const startGithubLogin = (req, res) => {
@@ -107,6 +112,7 @@ export const finishGithubLogin = async (req, res) => {
       (email) => email.primary === true && email.verified === true
     );
     if (!emailObj) {
+      // set notification
       return res.redirect("/login");
     }
     let user = await User.findOne({ email: emailObj.email });
@@ -180,16 +186,15 @@ export const postChangePassword = async (req, res) => {
   if (!ok) {
     return res.status(400).render("users/change-password", {
       pageTitle: "Change Password",
-      errorMessage: "The current password is incorrect.",
+      errorMessage: "The current password is incorrect",
     });
   }
-  if (newPassword != newPasswordConfirmation) {
+  if (newPassword !== newPasswordConfirmation) {
     return res.status(400).render("users/change-password", {
       pageTitle: "Change Password",
-      errorMessage: "The password does not match the confirmation.",
+      errorMessage: "The password does not match the confirmation",
     });
   }
-
   user.password = newPassword;
   await user.save();
   return res.redirect("/users/logout");
